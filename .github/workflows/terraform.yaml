@@ -49,3 +49,19 @@ jobs:
           kubectl apply -f k8s-manifests/namespace.yaml
           kubectl apply -f k8s-manifests/deployment.yaml
           kubectl apply -f k8s-manifests/service.yaml
+
+      # Step 5️⃣ - Show Terraform Outputs Summary
+      - name: Display Terraform Outputs
+        id: tf_outputs
+        run: terraform output -json > tf_outputs.json
+
+      - name: Show Outputs in Workflow Summary
+        run: |
+          echo "## 🌐 Terraform Outputs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Cluster Info" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cluster Name:** $(jq -r '.cluster_name.value' tf_outputs.json)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cluster Endpoint:** $(jq -r '.cluster_endpoint.value' tf_outputs.json)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Kubernetes Service" >> $GITHUB_STEP_SUMMARY
+          echo "- **Public URL:** http://$(jq -r '.service_hostname.value' tf_outputs.json)" >> $GITHUB_STEP_SUMMARY
