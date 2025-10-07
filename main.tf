@@ -66,3 +66,21 @@ resource "aws_iam_role_policy_attachment" "eks_AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_role.name
 }
+
+resource "kubernetes_service" "web_app" {
+  metadata {
+    name      = "web-app"
+    namespace = "default"
+  }
+
+  spec {
+    selector = {
+      app = "web-app"
+    }
+    port {
+      port        = 80
+      target_port = 80
+    }
+    type = "ClusterIP"
+  }
+}
