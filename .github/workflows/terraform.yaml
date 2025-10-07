@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 1️⃣ - Configure AWS credentials (must come before Terraform commands)
+      # Step 1 - Configure AWS credentials (must come before Terraform commands)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -22,43 +22,43 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
 
-      # Step 2️⃣ - Setup Terraform
+      # Step 2 - Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
 
-      # Step 3️⃣ - Terraform Init
+      # Step 3 - Terraform Init
       - name: Terraform Init
         run: terraform init
 
-      # Step 4️⃣ - Terraform Apply
+      # Step 4 - Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
-      # Step 5️⃣ - Install kubectl (Kubernetes CLI)
+      # Step 5 - Install kubectl (Kubernetes CLI)
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-      # Step 6️⃣ - Install jq (needed to read JSON outputs)
+      # Step 6 - Install jq (needed to read JSON outputs)
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      # Step 7️⃣ - Get kubeconfig from Terraform outputs (connects kubectl to EKS)
+      # Step 7 - Get kubeconfig from Terraform outputs (connects kubectl to EKS)
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name $(terraform output -raw cluster_name) --region us-east-1
 
-      # Step 8️⃣ - Apply Kubernetes manifests to EKS
+      # Step 8 - Apply Kubernetes manifests to EKS
       - name: Deploy Kubernetes manifests
         run: |
           kubectl apply -f k8s-manifests/namespace.yaml
           kubectl apply -f k8s-manifests/deployment.yaml
           kubectl apply -f k8s-manifests/service.yaml
 
-      # Step 9️⃣ - Display Terraform Outputs Summary
+      # Step 9 - Display Terraform Outputs Summary
       - name: Display Terraform Outputs
         id: tf_outputs
         run: terraform output -json > tf_outputs.json
