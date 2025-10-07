@@ -1,6 +1,6 @@
-# Create a VPC
+# --- Create a VPC ---
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
@@ -8,7 +8,7 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Create public subnet
+# --- Create a public subnet ---
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
@@ -19,7 +19,7 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Create private subnet
+# --- Create a private subnet ---
 resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
@@ -29,22 +29,7 @@ resource "aws_subnet" "private" {
   }
 }
 
-# Create an EKS cluster
-resource "aws_eks_cluster" "smart_cluster" {
-  name     = "smartapp-cluster"
-  role_arn = aws_iam_role.eks_role.arn
-
-  vpc_config {
-    subnet_ids = [
-      aws_subnet.public.id,
-      aws_subnet.private.id
-    ]
-  }
-
-  depends_on = [aws_iam_role_policy_attachment.eks_AmazonEKSClusterPolicy]
-}
-
-# IAM Role for EKS
+# --- IAM Role for EKS Cluster ---
 resource "aws_iam_role" "eks_role" {
   name = "eksClusterRole"
 
@@ -62,7 +47,28 @@ resource "aws_iam_role" "eks_role" {
   })
 }
 
+# --- Attach EKS Cluster Policy to the Role ---
 resource "aws_iam_role_policy_attachment" "eks_AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_role.name
 }
+
+# --- Create an EKS Cluster ---
+resource "aws_eks_cluster" "smart_cluster" {
+  name     = "smartapp-cluster"
+  role_arn = aws_iam_role.eks_role.arn
+
+  vpc_config {
+    subnet_ids = [
+      aws_subnet.public.id,
+      aws_subnet.private.id
+    ]
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.eks_AmazonEKSClusterPolicy]
+}
+
+# --- NOTE ---
+# We removed the Kubernetes Service part for now.
+# Once the EKS cluster is created successfully and we can connect to it,
+# we’ll add a kubernetes provider and deploy your web app inside the cluster.
